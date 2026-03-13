@@ -7,7 +7,6 @@ cost:1,
 damage:6,
 effect:{
 type:"paralyze",
-chance:0.25
 }
 },
 
@@ -67,8 +66,8 @@ element:"fire",
 cost:2,
 damage:8,
 effect:{
-type:"attackUp",
-amount:1
+type:"burn",
+amount:2
 },
 target:"self"
 },
@@ -130,9 +129,29 @@ element:"grass",
 cost:2,
 effect:{
 type:"poison",
-amount:2
+amount:1
 }
+},
 
+iceShard:{
+name:"Ice Shard",
+element:"water",
+cost:1,
+damage:5,
+effect:{
+type:"freeze"
+}
+},
+
+iceBeam:{
+name:"Ice Beam",
+element:"water",
+cost:2,
+damage:7,
+effect:{
+type:"freeze",
+chance:0.3
+}
 }
 
 }

@@ -10,9 +10,12 @@ this.logs = []
 
 }
 
-log(message){
+log(message,type=""){
 
-this.logs.push(message)
+this.logs.push({
+text:message,
+type:type
+})
 
 if(this.logs.length > 5){
 this.logs.shift()
@@ -21,6 +24,8 @@ this.logs.shift()
 }
 
 startTurn(){
+
+this.applyStatus(this.player)
 
 this.player.energy = 3
 
@@ -36,18 +41,21 @@ this.enemyTurn()
 
 playCard(user, card){
 
-this.log(user.name + " usou " + card.name)
-
-if(user.energy < card.cost) return
+if(user.energy < card.cost){
+    this.log("Energia insuficiente para " + card.name)
+    return
+}
 
 user.energy -= card.cost
 
-let target
+this.log(user.name + " usou " + card.name,"attack")
 
-if(card.target === "self"){
-target = user
-}else{
-target = user === this.player ? this.enemy : this.player
+let enemyTarget = user === this.player ? this.enemy : this.player
+let effectTarget = enemyTarget
+
+// buffs sempre no usuário
+if(card.effect && card.effect.type.includes("Up")){
+effectTarget = user
 }
 
 // dano
@@ -56,97 +64,33 @@ if(card.damage){
 let damage = card.damage
 
 damage += user.attack || 0
-damage -= target.defense || 0
+damage -= enemyTarget.defense || 0
 
 if(damage < 0) damage = 0
 
-target.hp -= damage
-this.log(target.name + " sofreu " + damage + " de dano")
-}
+enemyTarget.hp -= damage
 
+if(enemyTarget.hp < 0) enemyTarget.hp = 0
+
+this.log(enemyTarget.name + " sofreu " + damage + " de dano","damage")
+
+}
 // efeito
 if(card.effect){
-this.applyEffect(card.effect, target)
+
+const handler = STATUS_EFFECTS[card.effect.type]
+
+if(handler?.apply){
+handler.apply(effectTarget, card.effect, this)
 }
 
-}
-
-applyEffect(effect, target){
-
-if(!effect) return
-
-target.status = target.status || {}
-
-if(effect.type === "poison"){
-target.status.poison = (target.status.poison || 0) + effect.amount
-this.log(target.name + " foi envenenado ("+effect.amount+")")
-}
-
-if(effect.type === "burn"){
-target.status.burn = effect.amount
-this.log(target.name + " foi queimado")
-
-}
-
-if(effect.type === "attackUp"){
-target.attack = (target.attack || 0) + effect.amount
-}
-
-if(effect.type === "attackDown"){
-target.attack = (target.attack || 0) - effect.amount
-}
-
-if(effect.type === "defenseUp"){
-target.defense = (target.defense || 0) + effect.amount
-}
-
-if(effect.type === "defenseDown"){
-target.defense = (target.defense || 0) - effect.amount
-}
-
-if(effect.type === "paralyze"){
-if(Math.random() < effect.chance){
-target.status.paralyze = 1
-this.log(target.name + " ficou paralisado")
-
-}
 }
 
 }
 
 applyStatus(pokemon){
 
-pokemon.status = pokemon.status || {}
-
-// poison
-if(pokemon.status.poison){
-pokemon.hp -= pokemon.status.poison
-this.log(pokemon.name + " sofre " + pokemon.status.poison + " de poison")
-}
-
-// burn
-if(pokemon.status.burn){
-pokemon.hp -= pokemon.status.burn
-pokemon.status.burn--
-
-if(pokemon.status.burn <= 0){
-delete pokemon.status.burn
-this.log(pokemon.name + " sofre " + pokemon.status.burn + " de burn")
-}
-}
-
-// paralyze
-if(pokemon.status.paralyze){
-
-if(Math.random() < 0.25){
-delete pokemon.status.paralyze
-return true
-}
-
-delete pokemon.status.paralyze
-}
-
-return false
+return applyStatus(pokemon,this)
 
 }
 

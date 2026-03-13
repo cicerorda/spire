@@ -2,27 +2,6 @@
 display:none;
 }
 
-.card-electric{
-background:linear-gradient(145deg,#ffd900,#d4b200);
-color:black;
-}
-
-.card-fire{
-background:linear-gradient(145deg,#ff5a2a,#b83a1b);
-}
-
-.card-water{
-background:linear-gradient(145deg,#4da6ff,#1c6fd1);
-}
-
-.card-grass{
-background:linear-gradient(145deg,#6edc6e,#2f9e2f);
-}
-
-.card-poison{
-background:linear-gradient(145deg,#9c4bd6,#6b2a8a);
-}
-
 body{
 font-family: Arial;
 background:#0c0c0c;
@@ -89,8 +68,6 @@ font-size:18px;
 font-weight:bold;
 }
 
-
-
 #map{
 display:grid;
 grid-template-columns:repeat(3,60px);
@@ -127,8 +104,6 @@ max-width:600px;
 margin:10px auto;
 padding:8px;
 
-border-radius:8px;
-
 height:120px;
 overflow-y:auto;
 
@@ -159,4 +134,23 @@ color:#ff8844;
 
 .log-defense{
 color:#66aaff;
+}
+
+#reward-screen{
+text-align:center;
+margin-top:20px;
+}
+
+#reward-cards{
+display:flex;
+justify-content:center;
+gap:20px;
+margin-top:20px;
+}
+
+#character-list{
+display:flex;
+gap:20px;
+justify-content:center;
+margin-top:20px;
 }

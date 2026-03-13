@@ -14,13 +14,20 @@
 
 <h1>PokeSpire</h1>
 
-<div id="map-screen">
+<div id="character-screen">
+
+<h2>Escolha seu Pokémon</h2>
+
+<div id="character-list"></div>
+
+</div>
+
+<div id="map-screen" style="display:none;">
 
 <h2>Mapa</h2>
 <div id="map"></div>
 
 </div>
-
 
 <div id="battle-screen" style="display:none;">
 
@@ -35,19 +42,24 @@ HP: <span id="player-hp"></span>
 PP: <span id="energy"></span>
 </div>
 
-<!-- LOG DE BATALHA -->
 <div id="battle-log"></div>
 
 <div id="hand"></div>
 
-<!-- <button onclick="endTurn()">Finalizar Turno</button> -->
-
 </div>
 
+<div id="reward-screen" style="display:none;">
+
+<h2>Escolha uma carta</h2>
+
+<div id="reward-cards"></div>
+
+</div>
 
 <script src="data/cards.js"></script>
 <script src="data/characters.js"></script>
 <script src="engine/deck.js"></script>
+<script src="engine/status.js"></script>
 <script src="engine/battle.js"></script>
 <script src="engine/map.js"></script>
 <script src="script.js"></script>

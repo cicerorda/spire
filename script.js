@@ -7,6 +7,10 @@ let currentNode
 let availableNodes = []
 
 function startGame(){
+    
+player.status = {}
+player.attack = 0
+player.defense = 0
 
 let generator = new MapGenerator()
 
@@ -14,7 +18,12 @@ map = generator.generate()
 
 availableNodes = map.filter(n=>n.floor === 0)
 
+console.log(map)
+console.log(availableNodes)
+
 renderMap()
+
+showMap()
 
 }
 
@@ -65,7 +74,7 @@ startBattle()
 }
 
 if(node.type === "rest"){
-if(player) player.hp += 15
+player.hp = Math.min(player.hp + 15, 70)
 showMap()
 }
 
@@ -91,8 +100,6 @@ renderMap()
 function startBattle(){
 
 let chars = Object.values(CHARACTERS)
-
-player = JSON.parse(JSON.stringify(CHARACTERS.pikachu))
 
 enemy = JSON.parse(JSON.stringify(
 chars[Math.floor(Math.random()*chars.length)]
@@ -131,34 +138,9 @@ playerName += " 🛡" + (player.defense || 0)
 enemyName += " ⚔" + (enemy.attack || 0)
 enemyName += " 🛡" + (enemy.defense || 0)
 
-
-// STATUS DO PLAYER
-if(player.status?.poison){
-playerName += " 🧪" + player.status.poison
-}
-
-if(player.status?.burn){
-playerName += " 🔥" + player.status.burn
-}
-
-if(player.status?.paralyze){
-playerName += " ⚡"
-}
-
-
-// STATUS DO ENEMY
-if(enemy.status?.poison){
-enemyName += " 🧪" + enemy.status.poison
-}
-
-if(enemy.status?.burn){
-enemyName += " 🔥" + enemy.status.burn
-}
-
-if(enemy.status?.paralyze){
-enemyName += " ⚡"
-}
-
+// status
+playerName += getStatusIcons(player)
+enemyName += getStatusIcons(enemy)
 
 // ATUALIZA HTML
 document.getElementById("player-name").innerText = playerName
@@ -175,6 +157,7 @@ renderLog()
 function playCard(index){
 
 let cardId = deck.hand[index]
+
 let card = CARDS[cardId]
 
 if(!card) return
@@ -235,19 +218,21 @@ let div = document.createElement("div")
 
 div.className="card"
 
-if(card.type){
-div.classList.add("card-"+card.element)
-}
-
 let effectText = ""
 
 if(card.effect){
 
-if(card.effect.type==="poison")
-effectText = "Poison " + card.effect.amount
+if(card.effect.type==="attackUp")
+effectText="⚔ +" + card.effect.amount
 
-if(card.effect.type==="weak")
-effectText = "Weak " + card.effect.amount
+else if(card.effect.type==="attackDown")
+effectText="⚔ -" + card.effect.amount
+
+else if(card.effect.type==="defenseUp")
+effectText="🛡 +" + card.effect.amount
+
+else if(card.effect.type==="defenseDown")
+effectText="🛡 -" + card.effect.amount
 
 }
 
@@ -284,6 +269,9 @@ function showMap(){
 
 document.getElementById("map-screen").style.display="block"
 document.getElementById("battle-screen").style.display="none"
+document.getElementById("reward-screen").style.display="none"
+
+renderMap()
 
 }
 
@@ -296,20 +284,55 @@ document.getElementById("battle-screen").style.display="block"
 
 function victory(){
 
+battle = null
+
 let rewardCards = Object.keys(CARDS)
 .sort(()=>Math.random()-0.5)
 .slice(0,3)
 
-let choice = prompt(
-"Escolha uma carta:\n" +
-rewardCards.map((c,i)=>`${i+1} - ${CARDS[c].name}`).join("\n")
-)
+showReward(rewardCards)
 
-let selected = rewardCards[choice-1]
-
-if(selected){
-deck.discardPile.push(selected)
 }
+
+function showReward(cards){
+
+document.getElementById("battle-screen").style.display="none"
+document.getElementById("reward-screen").style.display="block"
+
+let container = document.getElementById("reward-cards")
+container.innerHTML=""
+
+cards.forEach(cardId=>{
+
+let card = CARDS[cardId]
+
+let div = document.createElement("div")
+div.className="card"
+
+if(card.element){
+div.classList.add("card-"+card.element)
+}
+
+div.innerHTML = `
+<div class="card-name">${card.name}</div>
+<div class="card-cost">PP ${card.cost}</div>
+<div class="card-damage">${card.damage || ""}</div>
+`
+
+div.onclick=()=>selectReward(cardId)
+
+container.appendChild(div)
+
+})
+
+}
+
+function selectReward(cardId){
+
+player.deck.push(cardId)
+
+document.getElementById("reward-cards").innerHTML = ""
+document.getElementById("reward-screen").style.display="none"
 
 showMap()
 
@@ -322,11 +345,63 @@ let logDiv = document.getElementById("battle-log")
 if(!battle) return
 
 logDiv.innerHTML = battle.logs
-.map(l=>"<div>"+l+"</div>")
+.map(l=>`<div class="log-${l.type}">${l.text}</div>`)
 .join("")
 
 logDiv.scrollTop = logDiv.scrollHeight
 
 }
 
+function showCharacterSelect(){
+
+document.getElementById("character-screen").style.display="block"
+document.getElementById("map-screen").style.display="none"
+document.getElementById("battle-screen").style.display="none"
+document.getElementById("reward-screen").style.display="none"
+
+let container = document.getElementById("character-list")
+container.innerHTML=""
+
+Object.entries(CHARACTERS).forEach(([id,char])=>{
+
+let div = document.createElement("div")
+
+// usa o mesmo visual das cartas
+div.className = "card"
+
+div.innerHTML = `
+<div class="card-name">${char.name}</div>
+
+<div class="card-cost">HP ${char.hp}</div>
+
+<div class="card-effect">
+⚔ ${char.damage}
+</div>
+`
+
+div.onclick = ()=>selectCharacter(id)
+
+container.appendChild(div)
+
+})
+
+}
+
+function selectCharacter(id){
+
+// cria o player
+player = JSON.parse(JSON.stringify(CHARACTERS[id]))
+
+player.status = {}
+player.attack = 0
+player.defense = 0
+
+// esconde seleção de personagem
+document.getElementById("character-screen").style.display = "none"
+
+// inicia jogo
 startGame()
+
+}
+
+showCharacterSelect()
