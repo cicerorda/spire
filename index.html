@@ -1,3 +1,17 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+<title>PokeSpire</title>
+
+<link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
 <h1>PokeSpire</h1>
 
 <div id="map-screen">
@@ -18,11 +32,25 @@ HP: <span id="enemy-hp"></span>
 <div class="player">
 <h2 id="player-name"></h2>
 HP: <span id="player-hp"></span>
-Energia: <span id="energy"></span>
+PP: <span id="energy"></span>
 </div>
+
+<!-- LOG DE BATALHA -->
+<div id="battle-log"></div>
 
 <div id="hand"></div>
 
-<button onclick="endTurn()">Finalizar Turno</button>
+<!-- <button onclick="endTurn()">Finalizar Turno</button> -->
 
 </div>
+
+
+<script src="data/cards.js"></script>
+<script src="data/characters.js"></script>
+<script src="engine/deck.js"></script>
+<script src="engine/battle.js"></script>
+<script src="engine/map.js"></script>
+<script src="script.js"></script>
+
+</body>
+</html>

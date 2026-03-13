@@ -2,7 +2,7 @@ class Deck{
 
 constructor(cards){
 
-this.drawPile = [...cards]
+this.drawPile = cards.filter(c => CARDS[c]) // remove cartas inexistentes
 this.discardPile = []
 this.hand = []
 

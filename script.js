@@ -60,14 +60,12 @@ currentNode = node
 availableNodes = node.connections.map(id=>map.find(n=>n.id===id))
 
 if(node.type === "battle"){
-
 showBattle()
 startBattle()
-
 }
 
 if(node.type === "rest"){
-player.hp += 15
+if(player) player.hp += 15
 showMap()
 }
 
@@ -92,26 +90,85 @@ renderMap()
 
 function startBattle(){
 
-player = JSON.parse(JSON.stringify(POKEMONS.pikachu))
-enemy = JSON.parse(JSON.stringify(ENEMIES.rattata))
+let chars = Object.values(CHARACTERS)
+
+player = JSON.parse(JSON.stringify(CHARACTERS.pikachu))
+
+enemy = JSON.parse(JSON.stringify(
+chars[Math.floor(Math.random()*chars.length)]
+))
+
+player.status = {}
+enemy.status = {}
+
+player.attack = 0
+player.defense = 0
+
+enemy.attack = 0
+enemy.defense = 0
 
 deck = new Deck(player.deck)
 
-battle = new Battle(player,enemy)
+battle = new Battle(player,enemy,deck)
 
-startTurn()
-
-}
-
-function startTurn(){
-
-player.energy = 3
-
-deck.draw(5)
+battle.startTurn()
 
 renderHand()
 
 updateUI()
+
+}
+
+function updateUI(){
+
+let enemyName = enemy.name
+let playerName = player.name
+
+// ATAQUE / DEFESA
+playerName += " ⚔" + (player.attack || 0)
+playerName += " 🛡" + (player.defense || 0)
+
+enemyName += " ⚔" + (enemy.attack || 0)
+enemyName += " 🛡" + (enemy.defense || 0)
+
+
+// STATUS DO PLAYER
+if(player.status?.poison){
+playerName += " 🧪" + player.status.poison
+}
+
+if(player.status?.burn){
+playerName += " 🔥" + player.status.burn
+}
+
+if(player.status?.paralyze){
+playerName += " ⚡"
+}
+
+
+// STATUS DO ENEMY
+if(enemy.status?.poison){
+enemyName += " 🧪" + enemy.status.poison
+}
+
+if(enemy.status?.burn){
+enemyName += " 🔥" + enemy.status.burn
+}
+
+if(enemy.status?.paralyze){
+enemyName += " ⚡"
+}
+
+
+// ATUALIZA HTML
+document.getElementById("player-name").innerText = playerName
+document.getElementById("enemy-name").innerText = enemyName
+
+document.getElementById("player-hp").innerText = player.hp
+document.getElementById("enemy-hp").innerText = enemy.hp
+document.getElementById("energy").innerText = player.energy
+
+renderLog()
 
 }
 
@@ -120,7 +177,9 @@ function playCard(index){
 let cardId = deck.hand[index]
 let card = CARDS[cardId]
 
-battle.playCard(card)
+if(!card) return
+
+battle.playCard(player, card)
 
 deck.discard(cardId)
 deck.hand.splice(index,1)
@@ -133,11 +192,15 @@ return
 renderHand()
 updateUI()
 
+if(player.energy <= 0){
+setTimeout(endTurn, 500)
+}
+
 }
 
 function endTurn(){
 
-battle.enemyTurn()
+battle.endTurn()
 
 if(player.hp <= 0){
 alert("Você perdeu!")
@@ -148,7 +211,11 @@ return
 deck.discardPile.push(...deck.hand)
 deck.hand = []
 
-startTurn()
+battle.startTurn()
+
+renderHand()
+
+updateUI()
 
 }
 
@@ -162,30 +229,33 @@ deck.hand.forEach((cardId,index)=>{
 
 let card = CARDS[cardId]
 
-let div=document.createElement("div")
+if(!card) return
+
+let div = document.createElement("div")
 
 div.className="card"
 
 if(card.type){
-div.classList.add("card-"+card.type)
+div.classList.add("card-"+card.element)
 }
 
 let effectText = ""
+
 if(card.effect){
-effectText = card.effect.type
+
+if(card.effect.type==="poison")
+effectText = "Poison " + card.effect.amount
+
+if(card.effect.type==="weak")
+effectText = "Weak " + card.effect.amount
+
 }
 
 div.innerHTML=`
 
 <div class="card-name">${card.name}</div>
 
-<div class="card-cost">
-⚡ ${card.cost}
-</div>
-
-<div class="card-damage">
-${card.damage ? card.damage+" dmg" : ""}
-</div>
+<div class="card-cost">PP ${card.cost}</div>
 
 <div class="card-effect">
 ${effectText}
@@ -195,20 +265,18 @@ ${effectText}
 
 div.onclick=()=>playCard(index)
 
+// sem energia suficiente
+if(player.energy < card.cost){
+
+div.classList.add("card-disabled")
+div.classList.add("card-no-energy")
+
+div.style.pointerEvents="none"
+}
+
 handDiv.appendChild(div)
 
 })
-
-}
-
-function updateUI(){
-
-document.getElementById("player-name").innerText = player.name
-document.getElementById("enemy-name").innerText = enemy.name
-
-document.getElementById("player-hp").innerText = player.hp
-document.getElementById("enemy-hp").innerText = enemy.hp
-document.getElementById("energy").innerText = player.energy
 
 }
 
@@ -228,9 +296,36 @@ document.getElementById("battle-screen").style.display="block"
 
 function victory(){
 
-alert("Vitória!")
+let rewardCards = Object.keys(CARDS)
+.sort(()=>Math.random()-0.5)
+.slice(0,3)
+
+let choice = prompt(
+"Escolha uma carta:\n" +
+rewardCards.map((c,i)=>`${i+1} - ${CARDS[c].name}`).join("\n")
+)
+
+let selected = rewardCards[choice-1]
+
+if(selected){
+deck.discardPile.push(selected)
+}
 
 showMap()
+
+}
+
+function renderLog(){
+
+let logDiv = document.getElementById("battle-log")
+
+if(!battle) return
+
+logDiv.innerHTML = battle.logs
+.map(l=>"<div>"+l+"</div>")
+.join("")
+
+logDiv.scrollTop = logDiv.scrollHeight
 
 }
 

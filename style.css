@@ -1,5 +1,26 @@
-#battle{
+#battle-screen{
 display:none;
+}
+
+.card-electric{
+background:linear-gradient(145deg,#ffd900,#d4b200);
+color:black;
+}
+
+.card-fire{
+background:linear-gradient(145deg,#ff5a2a,#b83a1b);
+}
+
+.card-water{
+background:linear-gradient(145deg,#4da6ff,#1c6fd1);
+}
+
+.card-grass{
+background:linear-gradient(145deg,#6edc6e,#2f9e2f);
+}
+
+.card-poison{
+background:linear-gradient(145deg,#9c4bd6,#6b2a8a);
 }
 
 body{
@@ -35,12 +56,22 @@ flex-direction:column;
 justify-content:space-between;
 
 transition:0.2s;
-box-shadow:0 4px 8px rgba(0,0,0,0.4);
+box-shadow:0 6px 14px rgba(0,0,0,0.6);
 }
 
 .card:hover{
-transform:translateY(-10px) scale(1.05);
+transform:translateY(-15px) scale(1.08);
 background:#333;
+}
+
+.card-disabled{
+opacity:0.35;
+cursor:not-allowed;
+filter:grayscale(70%);
+}
+
+.card-no-energy{
+border:2px solid #ff4444;
 }
 
 .card-name{
@@ -58,24 +89,13 @@ font-size:18px;
 font-weight:bold;
 }
 
-.card-electric{
-background:#d4b200;
-color:black;
-}
 
-.card-fire{
-background:#b83a1b;
-}
-
-.card-poison{
-background:#6b2a8a;
-}
 
 #map{
-display:flex;
-flex-wrap:wrap;
-gap:12px;
-margin-top:20px;
+display:grid;
+grid-template-columns:repeat(3,60px);
+gap:20px;
+justify-content:center;
 }
 
 .node{
@@ -100,4 +120,43 @@ background:#555;
 .node-active{
 background:#777;
 box-shadow:0 0 10px #fff3;
+}
+
+#battle-log{
+max-width:600px;
+margin:10px auto;
+padding:8px;
+
+border-radius:8px;
+
+height:120px;
+overflow-y:auto;
+
+text-align:left;
+font-size:14px;
+}
+
+#battle-log div{
+margin-bottom:4px;
+opacity:0.9;
+}
+
+.log-attack{
+color:#ffcc00;
+}
+
+.log-damage{
+color:#ff5555;
+}
+
+.log-poison{
+color:#c06bff;
+}
+
+.log-burn{
+color:#ff8844;
+}
+
+.log-defense{
+color:#66aaff;
 }
